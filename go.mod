@@ -1,4 +1,4 @@
-module goansiparser
+module github.com/jwalton/goansiparser
 
 go 1.16
 
