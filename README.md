@@ -34,6 +34,7 @@ Calling `ansiparser.Parse()` will return an array of tokens of type:
 - `String` for a bare string, with the FG and BG colors set appropriately. The printable length of the string will equal the `len()` of the string.
 - `ComplexChar` for any case where more than one character in the string results in only a single printable character in the output.
 - `EscapeCode` for any characters that are part of an ANSI escape sequence. These are always 0-width strings when output to a terminal.
+- `ZeroWidth` for the `BEL` character.
 
 ## Related
 

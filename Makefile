@@ -31,9 +31,6 @@ all: generate fmt lint test ## Build, format, and test
 .PHONY: generate
 generate: ; $(info $(M) generating source…) @ ## Generate source code
 	$Q go generate ./...
-	$Q cp ./internal/generator/gchalkgen/gchalkgen.go.txt ./internal/generator/gchalkgen/gchalkgen.go
-	$Q go run ./internal/generator/gchalkgen/gchalkgen.go > generated.go
-	$Q gofmt -s -w generated.go
 
 # Tests
 

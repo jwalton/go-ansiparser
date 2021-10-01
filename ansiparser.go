@@ -8,9 +8,6 @@
 package ansiparser
 
 const bel = 7
-const cr = 13
-const cursorRight = 28
-const cursonDown = 31
 const st = "\u001B\\"
 
 //go:generate stringer -type=TokenType
@@ -28,7 +25,8 @@ const (
 	// than one char in the input.  Examples are codepoints that take up more than
 	// two bytes, or multiple emoji joined together with zero-width-joiners.
 	ComplexChar TokenType = 2
-	// ZeroWidth represents a zero-width character (such as \n or BEL).
+	// ZeroWidth represents a zero-width character (such as BEL).  These
+	// do not include characters that move the cursor.
 	ZeroWidth TokenType = 3
 )
 

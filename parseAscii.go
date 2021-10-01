@@ -54,7 +54,7 @@ func parseASCII(str string, force bool, startFG string, startBG string) (tokens 
 			escapeCode := parseASCIIOSC(str[i:], currentFG, currentBG)
 			tokens = append(tokens, escapeCode)
 			i += len(escapeCode.Content)
-		} else if c >= bel && c <= cr || c >= cursorRight && c <= cursonDown {
+		} else if c == bel {
 			finishStringToken(i)
 			tokens = append(tokens, AnsiToken{
 				Type:    ZeroWidth,
