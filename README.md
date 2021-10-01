@@ -1,9 +1,9 @@
 # ansiparser
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/jwalton/goansiparser)](https://pkg.go.dev/github.com/jwalton/goansiparser?readme=expanded#section-readme)
-[![Build Status](https://github.com/jwalton/goansiparser/workflows/Build/badge.svg)](https://github.com/jwalton/goansiparser/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jwalton/goansiparser)](https://goreportcard.com/report/github.com/jwalton/goansiparser)
-[![Release](https://img.shields.io/github/release/jwalton/goansiparser.svg?style=flat-square)](https://github.com/jwalton/goansiparser/releases/latest)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/jwalton/go-ansiparser)](https://pkg.go.dev/github.com/jwalton/go-ansiparser?readme=expanded#section-readme)
+[![Build Status](https://github.com/jwalton/go-ansiparser/workflows/Build/badge.svg)](https://github.com/jwalton/go-ansiparser/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jwalton/go-ansiparser)](https://goreportcard.com/report/github.com/jwalton/go-ansiparser)
+[![Release](https://img.shields.io/github/release/jwalton/go-ansiparser.svg?style=flat-square)](https://github.com/jwalton/go-ansiparser/releases/latest)
 
 ansiparser is a golang library for parsing strings contianing ANSI or VT-100 escape codes.. It will correctly parse 8 bit, 16 bit, and truecolor escape codes out of strings. This library is optimized for the case where a string contains no unicode characters, however it handles unicode characters correctly, and returns them as "CompletChar" tokens to make it easier to work out the printable length of a string.
 
@@ -11,7 +11,7 @@ A quick example:
 
 ```go
 import (
-    "github.com/jwalton/goansiparser"
+    "github.com/jwalton/go-ansiparser"
 )
 
 func main() {
