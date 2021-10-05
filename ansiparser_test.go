@@ -211,3 +211,21 @@ func TestAsciiRGB(t *testing.T) {
 		},
 	}, result)
 }
+
+func TestTokensPrintLength(t *testing.T) {
+	// Regular ascii string
+	result := Parse("hello")
+	assert.Equal(t, 5, TokensPrintLength(result))
+
+	// String with a color code in it
+	result = Parse("\u001B[38;2;0;30;255;48;2;255;90;0mhello")
+	assert.Equal(t, 5, TokensPrintLength(result))
+
+	// String with a BEL
+	result = Parse("\u0007hello")
+	assert.Equal(t, 5, TokensPrintLength(result))
+
+	// String with some unicode characters
+	result = Parse("hello 👍🏼 world")
+	assert.Equal(t, 13, TokensPrintLength(result))
+}

@@ -50,6 +50,22 @@ type AnsiToken struct {
 	BG string
 }
 
+// PrintLength returns the number of characters this token would take up on-screen.
+func (token AnsiToken) PrintLength() int {
+	switch token.Type {
+	case String:
+		return len(token.Content)
+	case ComplexChar:
+		return 1
+	case ZeroWidth:
+		return 0
+	case EscapeCode:
+		return 0
+	}
+
+	return 0
+}
+
 // Parse parses a string containing ANSI escape codes into a slice of one or more
 // AnsiTokens.
 func Parse(str string) []AnsiToken {
@@ -68,4 +84,16 @@ func Parse(str string) []AnsiToken {
 	}
 
 	return tokens
+}
+
+// TokensPrintLength returns the length a parsed set of tokens would take up
+// on-screen if printed.  This assumes all escape codes are rendered zero-length.
+func TokensPrintLength(tokens []AnsiToken) int {
+	length := 0
+
+	for _, token := range tokens {
+		length += token.PrintLength()
+	}
+
+	return length
 }
