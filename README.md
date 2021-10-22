@@ -7,7 +7,7 @@
 
 ansiparser is a golang library for parsing strings containing ANSI or VT-100 escape codes. It will correctly parse 8 bit, 16 bit, and truecolor escape codes out of strings.
 
-A quick example:
+To use, you create a StringTokenizer, then call `tokenizer.Next()` which will return true if another token is available, or false otherwise. The token is availalbe via `tokenizer.Token()`.
 
 ```go
 import (
@@ -15,26 +15,29 @@ import (
 )
 
 func main() {
-    tokenizer := ansi
-    result := ansiparser.Parse("hello \u001B[31m👍🏼 \u001B[39mworld")
-    // Result will be:
-    //
-    // []AnsiToken{
-    //     {Type: ansiparser.String, Content: "hello ", FG: "", BG: ""},
-    //     {Type: ansiparser.EscapeCode, Content: "\u001B[31m", FG: "31", BG: ""},
-    //     {Type: ansiparser.String, Content: "👍🏼 ", FG: "31", BG: ""},
-    //     {Type: ansiparser.EscapeCode, Content: "\u001B[39m", FG: "", BG: ""},
-    //     {Type: ansiparser.String, Content: "world", FG: "", BG: ""},
-    // }
+    tokenizer := NewStringTokenizer("hello \u001B[31m👍🏼 \u001B[39mworld")
+
+    for tokenizer.Next() {
+        token := tokenizer.Token()
+        // Do something with the token!
+    }
 }
 ```
 
-Calling `ansiparser.Parse()` will return an array of tokens of type:
+The above example would generate the following tokens:
 
-- `String` for a bare string, with the FG and BG colors set appropriately. The printable length of the string will equal the `len()` of the string.
-- `ComplexChar` for any case where more than one character in the string results in only a single printable character in the output.
+```go
+{Type: ansiparser.String,     Content: "hello ",     FG: "",   BG: ""}
+{Type: ansiparser.EscapeCode, Content: "\u001B[31m", FG: "31", BG: ""}
+{Type: ansiparser.String,     Content: "👍🏼 ",        FG: "31", BG: ""}
+{Type: ansiparser.EscapeCode, Content: "\u001B[39m", FG: "",   BG: ""}
+{Type: ansiparser.String,     Content: "world",      FG: "",   BG: ""},
+```
+
+Token types are:
+
+- `String` for a bare string, with the FG and BG colors set appropriately.
 - `EscapeCode` for any characters that are part of an ANSI escape sequence. These are always 0-width strings when output to a terminal.
-- `ZeroWidth` for the `BEL` character.
 
 ## Related
 
