@@ -10,13 +10,11 @@ func _() {
 	var x [1]struct{}
 	_ = x[String-0]
 	_ = x[EscapeCode-1]
-	_ = x[ComplexChar-2]
-	_ = x[ZeroWidth-3]
 }
 
-const _TokenType_name = "StringEscapeCodeComplexCharZeroWidth"
+const _TokenType_name = "StringEscapeCode"
 
-var _TokenType_index = [...]uint8{0, 6, 16, 27, 36}
+var _TokenType_index = [...]uint8{0, 6, 16}
 
 func (i TokenType) String() string {
 	if i < 0 || i >= TokenType(len(_TokenType_index)-1) {

@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jwalton/go-ansiparser)](https://goreportcard.com/report/github.com/jwalton/go-ansiparser)
 [![Release](https://img.shields.io/github/release/jwalton/go-ansiparser.svg?style=flat-square)](https://github.com/jwalton/go-ansiparser/releases/latest)
 
-ansiparser is a golang library for parsing strings contianing ANSI or VT-100 escape codes.. It will correctly parse 8 bit, 16 bit, and truecolor escape codes out of strings. This library is optimized for the case where a string contains no unicode characters, however it handles unicode characters correctly, and returns them as "CompletChar" tokens to make it easier to work out the printable length of a string.
+ansiparser is a golang library for parsing strings containing ANSI or VT-100 escape codes. It will correctly parse 8 bit, 16 bit, and truecolor escape codes out of strings.
 
 A quick example:
 
@@ -15,14 +15,14 @@ import (
 )
 
 func main() {
+    tokenizer := ansi
     result := ansiparser.Parse("hello \u001B[31m👍🏼 \u001B[39mworld")
     // Result will be:
     //
     // []AnsiToken{
     //     {Type: ansiparser.String, Content: "hello ", FG: "", BG: ""},
     //     {Type: ansiparser.EscapeCode, Content: "\u001B[31m", FG: "31", BG: ""},
-    //     {Type: ansiparser.ComplexChar, Content: "👍🏼", FG: "31", BG: ""},
-    //     {Type: ansiparser.String, Content: " ", FG: "31", BG: ""},
+    //     {Type: ansiparser.String, Content: "👍🏼 ", FG: "31", BG: ""},
     //     {Type: ansiparser.EscapeCode, Content: "\u001B[39m", FG: "", BG: ""},
     //     {Type: ansiparser.String, Content: "world", FG: "", BG: ""},
     // }

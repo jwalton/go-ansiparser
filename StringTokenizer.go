@@ -1,82 +1,92 @@
 package ansiparser
 
-// This is the "fast" parser which is used when all characters in `str` are part
-// of the ASCII character set.  In this case, we know every char in the string
-// either takes up one character on screen, or is part of an ANSI escape code.
-//
-// When `parseASCII()` reaches the end of the string, or encounters a non-ASCII
-// character, it will return any tokens it managed to parse, and the length
-// of the string that it managed to consume.
-func parseASCII(str string, force bool, startFG string, startBG string) (tokens []AnsiToken, consumed int) {
-	currentFG := startFG
-	currentBG := startBG
+// StringTokenizer tokenizes a string.
+type StringTokenizer struct {
+	token    AnsiToken
+	input    string
+	position int
+}
 
-	tokens = make([]AnsiToken, 0, 1)
-	currentStart := -1
+// NewStringTokenizer returns a new instance of StringTokenizer, which is used
+// to tokenizer the input string.  Call `Next()` to see if there is a next token,
+// and if this returns true the current token can be read from `Token()`.
+func NewStringTokenizer(input string) *StringTokenizer {
+	return &StringTokenizer{
+		input:    input,
+		position: 0,
+	}
+}
 
-	finishStringToken := func(end int) {
-		if currentStart == -1 {
-			return
+// Token returns the current token.
+func (tokenizer *StringTokenizer) Token() AnsiToken {
+	return tokenizer.token
+}
+
+// Next parses the next token from the input string.  Returns true if a token
+// was found, false if the end of the input was reached.  The token is available
+// via `Token()`.
+func (tokenizer *StringTokenizer) Next() bool {
+	str := tokenizer.input
+
+	// The start of the token we are currently reading.
+	currentStart := tokenizer.position
+
+	// This function works by reading one character at a time.  Most of the time
+	// we'll be reading a string, so we keep incremention `tokenizer.position`.
+	// Whenever we run into a character that signals the start of an escape code,
+	// we call this function which will generate a token if we have anything in
+	// the string.  Otherwise we go ahead and handle the escape code.
+	makeStringToken := func() bool {
+		if currentStart == tokenizer.position || tokenizer.position > len(str) {
+			return false
 		}
 
-		tokens = append(tokens, AnsiToken{
+		tokenizer.token = AnsiToken{
 			Type:    String,
-			Content: str[currentStart:end],
-			FG:      currentFG,
-			BG:      currentBG,
-		})
-
-		currentStart = -1
+			Content: str[currentStart:tokenizer.position],
+			FG:      tokenizer.token.FG,
+			BG:      tokenizer.token.BG,
+		}
+		return true
 	}
 
-	i := 0
-	for i < len(str) {
-		c := str[i]
-		if c > 127 && !force {
-			// Non-ascii character. Abort.
-			// FIXME: Rewind one byte because the previous char may be
-			// modified by this char.
-			finishStringToken(i)
-			break
-		} else if c == '\u001B' && (i+1) < len(str) && str[i+1] == '[' {
-			finishStringToken(i)
+	for tokenizer.position < len(str) {
+		c := str[tokenizer.position]
+		if c > 127 {
+			// Skip over any multi-byte UTF-8 characters.
+			// This works because the first bit of any multi-byte UTF-8 character
+			// is always 1 - the first byte starts with a 1, and all continuation
+			// characters start with 10.
+			tokenizer.position++
 
+		} else if c == '\u001B' && (tokenizer.position+1) < len(str) && str[tokenizer.position+1] == '[' {
 			// Control Sequence Introducer (CSI)
-			escapeCode := parseASCIIEscapeCode(str[i:], currentFG, currentBG)
-			currentFG = escapeCode.FG
-			currentBG = escapeCode.BG
-			tokens = append(tokens, escapeCode)
-			i += len(escapeCode.Content)
-		} else if c == '\u001B' && (i+1) < len(str) && str[i+1] == ']' {
-			finishStringToken(i)
-
-			// Operating System Command (OSC)
-			escapeCode := parseASCIIOSC(str[i:], currentFG, currentBG)
-			tokens = append(tokens, escapeCode)
-			i += len(escapeCode.Content)
-		} else if c == bel {
-			finishStringToken(i)
-			tokens = append(tokens, AnsiToken{
-				Type:    ZeroWidth,
-				Content: str[i : i+1],
-				FG:      currentFG,
-				BG:      currentBG,
-			})
-			i++
-		} else {
-			if currentStart == -1 {
-				// Start reading a string token
-				currentStart = i
-			} else {
-				// Continue reading a string token...
+			if makeStringToken() {
+				return true
 			}
-			i++
+
+			escapeCode := parseASCIIEscapeCode(str[tokenizer.position:], tokenizer.token.FG, tokenizer.token.BG)
+			tokenizer.token = escapeCode
+			tokenizer.position += len(escapeCode.Content)
+			return true
+		} else if c == '\u001B' && (tokenizer.position+1) < len(str) && str[tokenizer.position+1] == ']' {
+			// Operating System Command (OSC)
+			if makeStringToken() {
+				return true
+			}
+
+			escapeCode := parseASCIIOSC(str[tokenizer.position:], tokenizer.token.FG, tokenizer.token.BG)
+			tokenizer.token = escapeCode
+			tokenizer.position += len(escapeCode.Content)
+			return true
+		} else {
+			// Add this character to the string we are reading...
+			tokenizer.position++
 		}
 	}
 
-	finishStringToken(i)
-
-	return tokens, i
+	// If there's anything left over, return a string token.
+	return makeStringToken()
 }
 
 func parseASCIIOSC(
@@ -183,7 +193,7 @@ func parseSGR(
 		}
 		answer := sgr[start:pos]
 		if pos < len(sgr) {
-			// Eat the ;
+			// Consume the ;
 			pos++
 		}
 		return answer
@@ -248,7 +258,7 @@ func parseSGR(
 			// Set background
 			bg = parseSetColor(startPos, command)
 		} else if len(command) == 2 && command[0] == '4' {
-			// Set backgrond to dim 4-bit color.
+			// Set background to dim 4-bit color.
 			bg = command
 		} else if command == "100" ||
 			command == "101" ||

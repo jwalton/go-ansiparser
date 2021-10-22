@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAsciiString(t *testing.T) {
+func TestParseString(t *testing.T) {
 	result := Parse("hello world")
 
 	assert.Equal(t, []AnsiToken{
@@ -25,19 +25,7 @@ func TestUnicodeString(t *testing.T) {
 	assert.Equal(t, []AnsiToken{
 		{
 			Type:    String,
-			Content: "hello ",
-			FG:      "",
-			BG:      "",
-		},
-		{
-			Type:    ComplexChar,
-			Content: "👍🏼",
-			FG:      "",
-			BG:      "",
-		},
-		{
-			Type:    String,
-			Content: " world",
+			Content: "hello 👍🏼 world",
 			FG:      "",
 			BG:      "",
 		},
@@ -50,14 +38,13 @@ func TestUnicodeStringWithANSI(t *testing.T) {
 	assert.Equal(t, []AnsiToken{
 		{Type: String, Content: "hello ", FG: "", BG: ""},
 		{Type: EscapeCode, Content: "\u001B[31m", FG: "31", BG: ""},
-		{Type: ComplexChar, Content: "👍🏼", FG: "31", BG: ""},
-		{Type: String, Content: " ", FG: "31", BG: ""},
+		{Type: String, Content: "👍🏼 ", FG: "31", BG: ""},
 		{Type: EscapeCode, Content: "\u001B[39m", FG: "", BG: ""},
 		{Type: String, Content: "world", FG: "", BG: ""},
 	}, result)
 }
 
-func TestAsciiStringWithANSI(t *testing.T) {
+func TestStringWithANSI(t *testing.T) {
 	result := Parse("hello \u001B[31mred\u001B[39m world")
 
 	assert.Equal(t, []AnsiToken{
@@ -94,7 +81,7 @@ func TestAsciiStringWithANSI(t *testing.T) {
 	}, result)
 }
 
-func TestAsciiStringWithOSC(t *testing.T) {
+func TestStringWithOSC(t *testing.T) {
 	result := Parse("hello \u001B]8;;http://thedreaming.org\u001B\\link\u001B]8;;\u001B\\")
 
 	assert.Equal(t, []AnsiToken{
@@ -125,7 +112,7 @@ func TestAsciiStringWithOSC(t *testing.T) {
 	}, result)
 }
 
-func TestAsciiStringWithCursorMovement(t *testing.T) {
+func TestStringWithCursorMovement(t *testing.T) {
 	result := Parse("hello \u001B[31m\u001B[1Cworld\u001B[39m")
 
 	assert.Equal(t, []AnsiToken{
@@ -162,7 +149,7 @@ func TestAsciiStringWithCursorMovement(t *testing.T) {
 	}, result)
 }
 
-func TestAsciiReset(t *testing.T) {
+func TestReset(t *testing.T) {
 	result := Parse("\u001B[31;42mhello\u001B[1m world")
 
 	assert.Equal(t, []AnsiToken{
@@ -193,7 +180,7 @@ func TestAsciiReset(t *testing.T) {
 	}, result)
 }
 
-func TestAsciiRGB(t *testing.T) {
+func TestRGB(t *testing.T) {
 	result := Parse("\u001B[38;2;0;30;255;48;2;255;90;0mhello")
 
 	assert.Equal(t, []AnsiToken{
@@ -212,20 +199,38 @@ func TestAsciiRGB(t *testing.T) {
 	}, result)
 }
 
-func TestTokensPrintLength(t *testing.T) {
-	// Regular ascii string
-	result := Parse("hello")
-	assert.Equal(t, 5, TokensPrintLength(result))
+func TestTokenizer(t *testing.T) {
+	tokenizer := NewStringTokenizer("hello \u001B[31m👍🏼 \u001B[39mworld")
 
-	// String with a color code in it
-	result = Parse("\u001B[38;2;0;30;255;48;2;255;90;0mhello")
-	assert.Equal(t, 5, TokensPrintLength(result))
+	assert.Equal(t, true, tokenizer.Next())
+	assert.Equal(t,
+		AnsiToken{Type: String, Content: "hello ", FG: "", BG: ""},
+		tokenizer.Token(),
+	)
 
-	// String with a BEL
-	result = Parse("\u0007hello")
-	assert.Equal(t, 5, TokensPrintLength(result))
+	assert.Equal(t, true, tokenizer.Next())
+	assert.Equal(t,
+		AnsiToken{Type: EscapeCode, Content: "\u001B[31m", FG: "31", BG: ""},
+		tokenizer.Token(),
+	)
 
-	// String with some unicode characters
-	result = Parse("hello 👍🏼 world")
-	assert.Equal(t, 13, TokensPrintLength(result))
+	assert.Equal(t, true, tokenizer.Next())
+	assert.Equal(t,
+		AnsiToken{Type: String, Content: "👍🏼 ", FG: "31", BG: ""},
+		tokenizer.Token(),
+	)
+
+	assert.Equal(t, true, tokenizer.Next())
+	assert.Equal(t,
+		AnsiToken{Type: EscapeCode, Content: "\u001B[39m", FG: "", BG: ""},
+		tokenizer.Token(),
+	)
+
+	assert.Equal(t, true, tokenizer.Next())
+	assert.Equal(t,
+		AnsiToken{Type: String, Content: "world", FG: "", BG: ""},
+		tokenizer.Token(),
+	)
+
+	assert.Equal(t, false, tokenizer.Next())
 }
