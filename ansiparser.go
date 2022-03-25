@@ -37,19 +37,6 @@ type AnsiToken struct {
 	BG string
 }
 
-// PrintLength returns the number of characters this token would take up on-screen.
-func (token AnsiToken) PrintLength() int {
-	// FIXME: Need to handle variable-width chars
-	switch token.Type {
-	case String:
-		return len(token.Content)
-	case EscapeCode:
-		return 0
-	}
-
-	return 0
-}
-
 // Parse parses a string containing ANSI escape codes into a slice of one or more
 // AnsiTokens.
 func Parse(str string) []AnsiToken {
