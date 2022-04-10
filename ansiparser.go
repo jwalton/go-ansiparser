@@ -35,6 +35,8 @@ type AnsiToken struct {
 	// string if this is uncolored.  If Type is EscapeCode and this clears the
 	// current foreground color, this will be "49".
 	BG string
+	// IsASCII is true if this string only contains ASCII characters.
+	IsASCII bool
 }
 
 // Parse parses a string containing ANSI escape codes into a slice of one or more

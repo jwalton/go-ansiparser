@@ -27,11 +27,11 @@ func main() {
 The above example would generate the following tokens:
 
 ```go
-{Type: ansiparser.String,     Content: "hello ",     FG: "",   BG: ""}
-{Type: ansiparser.EscapeCode, Content: "\u001B[31m", FG: "31", BG: ""}
-{Type: ansiparser.String,     Content: "👍🏼 ",        FG: "31", BG: ""}
-{Type: ansiparser.EscapeCode, Content: "\u001B[39m", FG: "",   BG: ""}
-{Type: ansiparser.String,     Content: "world",      FG: "",   BG: ""},
+{Type: ansiparser.String,     Content: "hello ",     FG: "",   BG: "", IsAscii: true}
+{Type: ansiparser.EscapeCode, Content: "\u001B[31m", FG: "31", BG: "", IsAscii: true}
+{Type: ansiparser.String,     Content: "👍🏼 ",        FG: "31", BG: "", IsAscii: false}
+{Type: ansiparser.EscapeCode, Content: "\u001B[39m", FG: "",   BG: "", IsAscii: true}
+{Type: ansiparser.String,     Content: "world",      FG: "",   BG: "", IsAscii: true},
 ```
 
 Token types are:

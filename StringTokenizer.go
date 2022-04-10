@@ -27,6 +27,7 @@ func (tokenizer *StringTokenizer) Token() AnsiToken {
 // via `Token()`.
 func (tokenizer *StringTokenizer) Next() bool {
 	str := tokenizer.input
+	isASCII := true
 
 	// The start of the token we are currently reading.
 	currentStart := tokenizer.position
@@ -46,6 +47,7 @@ func (tokenizer *StringTokenizer) Next() bool {
 			Content: str[currentStart:tokenizer.position],
 			FG:      tokenizer.token.FG,
 			BG:      tokenizer.token.BG,
+			IsASCII: isASCII,
 		}
 		return true
 	}
@@ -58,6 +60,7 @@ func (tokenizer *StringTokenizer) Next() bool {
 			// is always 1 - the first byte starts with a 1, and all continuation
 			// characters start with 10.
 			tokenizer.position++
+			isASCII = false
 
 		} else if c == '\u001B' && (tokenizer.position+1) < len(str) && str[tokenizer.position+1] == '[' {
 			// Control Sequence Introducer (CSI)
@@ -117,6 +120,7 @@ func parseASCIIOSC(
 		Content: str[0:i],
 		FG:      prevFG,
 		BG:      prevBG,
+		IsASCII: true,
 	}
 }
 
@@ -137,7 +141,8 @@ func parseASCIIEscapeCode(
 	prevBG string,
 ) (token AnsiToken) {
 	token = AnsiToken{
-		Type: EscapeCode,
+		Type:    EscapeCode,
+		IsASCII: true,
 	}
 
 	var command byte
